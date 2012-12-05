@@ -1,0 +1,14 @@
+{
+  "name": "node-cache-store",
+  "version": "0.0.1",
+  "description": "In memory cache for Node. You can use multi cache space.",
+  "author": {
+    "name": "Takashi seki",
+    "email": "sekitaka.tech@gmail.com"
+  },
+    "main": "./index",
+    "directories": {
+        "lib": "./lib"
+    },
+  "homepage": "https://github.com/sekitaka_1214/node-cache-store"
+}
