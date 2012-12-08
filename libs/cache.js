@@ -6,7 +6,7 @@ var utility = require('./utility.js') ;
  */
 var Cache = function(options) {
     var defaults = {
-        expire: 3600,           // default expire(sec)
+        expire: Cache.NO_LIMIT, // default expire(sec). minus value is no limit.
         expiredLoopTerm: 3600   // interval for delete expired data.(sec)
     }
     options = utility.objectMerge(defaults,options) ;
@@ -16,6 +16,18 @@ var Cache = function(options) {
     this.inExpiredProcess = false ; // flag for deleting expired data.
     this.startExpiredLoop() ;
 }
+
+/**
+ * Check expire is no limit.
+ * @param expire
+ * @return {Boolean}
+ */
+Cache.isNoLimit = function(expire) {
+    if (expire < 0) return true ;
+    return false ;
+} ;
+Cache.NO_LIMIT = -1 ;
+//Cache.NO_LIMIT = 1000 * 60 * 60 * 24 * 365 * 3000 ;
 
 /**
  * get value.
@@ -37,7 +49,12 @@ Cache.prototype.set = function(key, val, expire) {
     if ( !utility.isInt(expire) ) {
         expire = this.expire ;
     }
-    var expireTime = (new Date() * 1) + expire * 1000 ;
+
+    // create expire time.
+    var expireTime = 0 ;
+    if(Cache.isNoLimit(expire)) expireTime = expire ;
+    else expireTime = (new Date() * 1) + expire * 1000 ;
+
     this.data[key] = {
         expire: expireTime,
         value: val
@@ -55,7 +72,7 @@ Cache.prototype.delete = function(key) {
 /**
  * delete all cache.
  */
-Cache.prototype.deleteAll = function(){
+Cache.prototype.clear = function(){
     this.data = {} ;
 } ;
 
@@ -65,7 +82,7 @@ Cache.prototype.deleteAll = function(){
 Cache.prototype.expired = function(key) {
     var now = new Date() * 1 ;
     if (!this.data[key]) return ; // if not exist data.
-    if ( this.data[key].expire < now ) {
+    if ( (!Cache.isNoLimit(this.data[key].expire)) && this.data[key].expire < now ) {
         this.delete(key) ;
     }
 } ;
@@ -78,7 +95,7 @@ Cache.prototype.expiredAll = function() {
     var now = new Date() * 1 ;
     for ( var key in this.data ) {
         var expire = this.data[key].expire ;
-        if ( expire < now ) {
+        if ( (!Cache.isNoLimit(expire)) && expire < now ) {
             this.delete(key) ;
         }
     }
@@ -91,7 +108,7 @@ Cache.prototype.expiredAll = function() {
 Cache.prototype.startExpiredLoop = function() {
     var self = this ;
     setInterval(function(){
-        if ( self.inExpiredProcess ) return ; // Check duplicate
+        if ( self.inExpiredProcess ) return ; // Check duplicate process
         self.inExpiredProcess = true ;
         self.expiredAll();
         self.inExpiredProcess = false ;
