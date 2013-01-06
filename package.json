@@ -1,6 +1,6 @@
 {
   "name": "node-cache-store",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "In memory cache for Node. You can use multi cache space.",
   "author": {
     "name": "Takashi seki",
